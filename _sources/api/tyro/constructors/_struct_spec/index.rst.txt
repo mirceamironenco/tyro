@@ -1,0 +1,117 @@
+:orphan:
+
+:py:mod:`tyro.constructors._struct_spec`
+========================================
+
+.. py:module:: tyro.constructors._struct_spec
+
+
+Module Contents
+---------------
+
+.. py:class:: UnsupportedStructTypeMessage
+
+
+   Reason why a callable cannot be treated as a struct type.
+
+   .. py:attribute:: message
+      :type: str
+
+      
+
+
+.. py:exception:: InvalidDefaultInstanceError(message: str)
+
+
+   Bases: :py:obj:`Exception`
+
+   Raised when a default instance is not applicable to an annoated struct type.
+
+
+.. py:class:: StructFieldSpec
+
+
+   Behavior specification for a single field in our callable.
+
+   .. py:attribute:: name
+      :type: str
+
+      The name of the field. This will be used as a keyword argument for the
+      struct's associated ``instantiate(**kwargs)`` function.
+
+   .. py:attribute:: type
+      :type: tyro._typing.TypeForm
+
+      The type of the field. Can be either a primitive or a nested struct type.
+
+   .. py:attribute:: default
+      :type: Any
+
+      The default value of the field.
+
+   .. py:attribute:: helptext
+      :type: str | None
+
+      Helpjext for the field.
+
+   .. py:attribute:: is_default_overridden
+      :type: None
+
+      Deprecated. No longer used.
+
+
+.. py:class:: StructConstructorSpec
+
+
+   Specification for a struct type, which is broken down into multiple
+   fields.
+
+   Each struct type is instantiated by calling an ``instantiate(**kwargs)``
+   function with keyword a set of keyword arguments.
+
+   Unlike :class:`PrimitiveConstructorSpec`, there is only one way to use this class.
+   It must be returned by a rule in :class:`ConstructorRegistry`.
+
+   .. py:attribute:: instantiate
+      :type: Callable[Ellipsis, Any]
+
+      Function to call to instantiate the struct.
+
+   .. py:attribute:: fields
+      :type: tuple[StructFieldSpec, Ellipsis]
+
+      Fields used to construct the callable. Each field is used as a keyword
+      argument for the ``instantiate(**kwargs)`` function.
+
+
+.. py:class:: StructTypeInfo
+
+
+   Information used to generate constructors for struct types.
+
+   .. py:attribute:: type
+      :type: tyro._typing.TypeForm
+
+      The type of the (potential) struct.
+
+   .. py:attribute:: markers
+      :type: tuple[Any, Ellipsis]
+
+      Markers from :mod:`tyro.conf` that are associated with this field.
+
+   .. py:attribute:: default
+      :type: Any
+
+      The default value of the struct, or a member of
+      :data:`tyro.constructors.MISSING_AND_MISSING_NONPROP` if not present. In a
+      function signature, this is ``X`` in ``def main(x=X): ...``. This can be
+      useful for populating the default values of the struct.
+
+   .. py:method:: make(f: tyro._typing.TypeForm | Callable, default: Any) -> StructTypeInfo
+      :staticmethod:
+
+
+
+.. py:function:: apply_default_struct_rules(registry: tyro.constructors._registry.ConstructorRegistry) -> None
+
+
