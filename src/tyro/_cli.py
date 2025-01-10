@@ -402,16 +402,19 @@ def _cli_impl(
 
         print(f"Ordered defaults list: {_default_list}")
 
-        if len(args) > 0:
-            # Check that we can add the _default_subcommands to args Go through user
-            # speecified args and if the user made a choice eliminate the default.
+        if not args:
+            # The use passed no arguments, juse use the defaults.
+            # TODO(Mircea): Is this necessary after https://github.com/brentyi/tyro/pull/224 ?
+            args = _default_list
+        else:
+            # Go through user args and if the user made a subcom choice replace the default.
             dsu = _parsers.DSU()
 
             # Use this for replacement
             _item_to_pos = {item: idx for idx, item in enumerate(_default_list)}
 
-            # TODO(Mircea): Maybe do a check to ensure that user didn't specify multiple
-            # choices for the same union?  Does tyro do this already?
+            # This checks if the user specified multiple choices for the same union
+            roots_found = dict()
             first_non_choice = None
             for index, arg_item in enumerate(args):
                 if not dsu.is_node(arg_item):
@@ -420,7 +423,17 @@ def _cli_impl(
                     first_non_choice = index
                     break
 
+                if (prev_root := dsu.find(arg_item)) in roots_found:
+                    raise ValueError(
+                        f"Cannot specify multiple choices for the same subcommand, got {arg_item} and {roots_found[prev_root]}"
+                    )
+
+                roots_found[prev_root] = arg_item
+
                 # Otherwise, replace the default!
+                # TODO: This doesn't check for order consistency, since
+                # _default_list is in the correct order, meaning the user can specify
+                # the choices in the wrong order, and this take care of it. Change?
                 for default_choice in _default_subcommands:
                     if dsu.connected(default_choice, arg_item):
                         _default_list[_item_to_pos[default_choice]] = arg_item
@@ -430,7 +443,7 @@ def _cli_impl(
                 # We have normal arguments in addition to subcommand choices
                 args = _default_list + args[first_non_choice:]
             else:
-                # We have only subcommand choices (or nothing)
+                # We have only subcommand choices.
                 args = _default_list
 
         print(f"Subparser defaults after filter from args: {_default_list}:")
