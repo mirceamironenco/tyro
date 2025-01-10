@@ -1019,8 +1019,8 @@ class TyroArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
                         )
 
                 # Split into columns.
-                min_column_width = 65
-                height_breakpoint = 50
+                min_column_width = self.formatter._min_column_width
+                height_breakpoint = self.formatter._height_breakpoint
                 column_count = max(
                     1,
                     min(
