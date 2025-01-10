@@ -875,11 +875,26 @@ class TyroArgumentParser(argparse.ArgumentParser, argparse_sys.ArgumentParser): 
 
 
 class TyroArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
-    def __init__(self, prog: str):
+    _min_column_width: int
+    _height_breakpoint: int
+    _min_column_height_ratio: float
+
+    def __init__(
+        self,
+        prog: str,
+        *,
+        min_column_width: int = 65,
+        height_breakpoint: int = 50,
+        min_column_height_ratio: float = 0.6,
+    ) -> None:
+        assert 0.0 < min_column_height_ratio < 1.0
         indent_increment = 4
         width = shutil.get_terminal_size().columns - 2
         max_help_position = 24
         self._fixed_help_position = False
+        self._min_column_width = min_column_width
+        self._height_breakpoint = height_breakpoint
+        self._min_column_height_ratio = min_column_height_ratio
 
         # TODO: hacky. Refactor this.
         self._strip_ansi_sequences = not _arguments.USE_RICH
@@ -1044,7 +1059,10 @@ class TyroArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
                     #
                     # We use these ratios to prevent large hanging columns: https://github.com/brentyi/tyro/issues/222
                     if column_count == 1 or all(
-                        [ratio > 0.6 for ratio in column_lines_ratio]
+                        [
+                            ratio > self.formatter._min_column_height_ratio
+                            for ratio in column_lines_ratio
+                        ]
                     ):
                         break
                     column_count -= 1  # pragma: no cover

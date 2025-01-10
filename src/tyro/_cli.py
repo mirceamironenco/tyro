@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import dataclasses
+import functools
 import pathlib
 import sys
 import warnings
@@ -388,10 +389,13 @@ def _cli_impl(
     )
 
     # Generate parser!
+    formatter_class = functools.partial(
+        _argparse_formatter.TyroArgparseHelpFormatter, min_column_height_ratio=0.4
+    )
     with _argparse_formatter.ansi_context():
         parser = _argparse_formatter.TyroArgumentParser(
             prog=prog,
-            formatter_class=_argparse_formatter.TyroArgparseHelpFormatter,
+            formatter_class=formatter_class,
             allow_abbrev=False,
         )
         parser._parser_specification = parser_spec
