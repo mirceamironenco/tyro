@@ -113,13 +113,12 @@ class ParserSpecification:
     has_required_args: bool
     consolidate_subcommand_args: bool
 
-    # NB: You want a DSU here for efficiency.
-    # Because for all choices you want to be able to check all other choices
+    # Use a DSU since for all choices you want to be able to check all other choices
     # so it's just a connected component.
     # TODO: Make a dict[dsu_root] -> choices to display?
     subcommand_dsu: DSU
 
-    # Use a dict to preserve insertion order :)
+    # Use a dict to preserve insertion order.
     subparsers_default_subcommand_names: dict[str, Any]
 
     @staticmethod

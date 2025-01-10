@@ -400,6 +400,8 @@ def _cli_impl(
         # TODO: Check again if the visit order is pre-order dfs or BFS
         _default_list = list(_default_subcommands.keys())
 
+        print(f"Ordered defaults list: {_default_list}")
+
         if len(args) > 0:
             # Check that we can add the _default_subcommands to args Go through user
             # speecified args and if the user made a choice eliminate the default.
@@ -410,7 +412,7 @@ def _cli_impl(
 
             # TODO(Mircea): Maybe do a check to ensure that user didn't specify multiple
             # choices for the same union?  Does tyro do this already?
-            first_non_choice = 0
+            first_non_choice = None
             for index, arg_item in enumerate(args):
                 if not dsu.is_node(arg_item):
                     # NB: This assumes tyro.conf.ConsolidateSubcommandArgs!
@@ -424,7 +426,12 @@ def _cli_impl(
                         _default_list[_item_to_pos[default_choice]] = arg_item
                         break
 
-            args = _default_list + args[first_non_choice:]
+            if first_non_choice is not None:
+                # We have normal arguments in addition to subcommand choices
+                args = _default_list + args[first_non_choice:]
+            else:
+                # We have only subcommand choices (or nothing)
+                args = _default_list
 
         print(f"Subparser defaults after filter from args: {_default_list}:")
         print(f"final args are: {args}")
