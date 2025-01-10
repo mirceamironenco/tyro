@@ -23,7 +23,6 @@ def match_subcommand(
     TOOD: this function is based on heuristics. While it should be robust to
     most real-world scenarios, there's room for improvement for generic types.
     """
-
     # Get default subcommand name: by default hash.
     default_hash = object.__hash__(default)
     for subcommand_name, conf in subcommand_config_from_name.items():

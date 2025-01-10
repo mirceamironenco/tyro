@@ -33,6 +33,63 @@ from .constructors._primitive_spec import (
 T = TypeVar("T")
 
 
+class DSU(_singleton.Singleton):
+    _parent: dict[str, str]
+    _size: dict[str, int]
+
+    def init(self, *args, **kwds) -> None:
+        self._parent = {}
+        self._size = {}
+        self._components = 0
+
+    def is_node(self, node: str) -> bool:
+        return node in self._parent
+
+    def make(self, node: str) -> bool:
+        if not self.is_node(node):
+            self._parent[node] = node
+            self._size[node] = 1
+            self._components += 1
+
+            return True
+
+        return False
+
+    def find(self, node: str) -> str:
+        if not self.is_node(node):
+            self.make(node)
+            return node
+
+        while self._parent[node] != node:
+            self._parent[node] = self._parent[self._parent[node]]
+            node = self._parent[node]
+
+        return self._parent[node]
+
+    def union(self, node_x: str, node_y: str) -> bool:
+        x, y = self.find(node_x), self.find(node_y)
+
+        if x == y:
+            return False
+
+        if self._size[x] < self._size[y]:
+            x, y = y, x
+
+        self._parent[y] = x
+        self._size[x] += self._size[y]
+        self._components -= 1
+        return True
+
+    def connected(self, node_x: str, node_y: str) -> bool:
+        return self.find(node_x) == self.find(node_y)
+
+    def num_components(self) -> int:
+        return self._components
+
+    def component_size(self, node_x: str) -> int:
+        return self._size[self.find(node_x)]
+
+
 @dataclasses.dataclass(frozen=True)
 class ParserSpecification:
     """Each parser contains a list of arguments and optionally some subparsers."""
@@ -55,6 +112,15 @@ class ParserSpecification:
     extern_prefix: str
     has_required_args: bool
     consolidate_subcommand_args: bool
+
+    # NB: You want a DSU here for efficiency.
+    # Because for all choices you want to be able to check all other choices
+    # so it's just a connected component.
+    # TODO: Make a dict[dsu_root] -> choices to display?
+    subcommand_dsu: DSU
+
+    # Use a dict to preserve insertion order :)
+    subparsers_default_subcommand_names: dict[str, Any]
 
     @staticmethod
     def from_callable_or_type(
@@ -107,6 +173,8 @@ class ParserSpecification:
 
         subparsers = None
         subparsers_from_prefix = {}
+        subcommand_default_names = dict()
+        subcommand_dsu = DSU()
 
         for field in field_list:
             field_out = handle_field(
@@ -125,6 +193,31 @@ class ParserSpecification:
                 # Handle subparsers.
                 subparsers_from_prefix[field_out.intern_prefix] = field_out
                 subparsers = add_subparsers_to_leaves(subparsers, field_out)
+
+                if field_out.default_name is not None:
+                    assert field_out.default_name in field_out.parser_from_name
+
+                    subcommand_dsu.make(field_out.default_name)
+
+                    if field_out.default_name not in subcommand_default_names:
+                        # The value here isn't really relevant.
+                        subcommand_default_names[field_out.default_name] = (
+                            subcommand_dsu.find(field_out.default_name)
+                        )
+
+                    for choice in field_out.parser_from_name.keys():
+                        subcommand_dsu.union(field_out.default_name, choice)
+
+                if field_out.default_parser is not None:
+                    # Note: we are propagating up all subcommand default names
+                    # from all levels, to the root node. Because only the root
+                    # node is accessible in _cli.py
+                    subcommand_default_names |= (
+                        field_out.default_parser.subparsers_default_subcommand_names
+                    )
+
+                    # The DSU is a singleton so we don't need to merge it.
+
             elif isinstance(field_out, ParserSpecification):
                 # Handle nested parsers.
                 nested_parser = field_out
@@ -187,6 +280,8 @@ class ParserSpecification:
             extern_prefix=extern_prefix,
             has_required_args=has_required_args,
             consolidate_subcommand_args=consolidate_subcommand_args,
+            subparsers_default_subcommand_names=subcommand_default_names,
+            subcommand_dsu=subcommand_dsu,
         )
 
     def apply(

@@ -388,6 +388,47 @@ def _cli_impl(
         extern_prefix="",  # Used for recursive calls.
     )
 
+    # TODO: Maybe make a copy here?
+    _default_subcommands = parser_spec.subparsers_default_subcommand_names
+
+    if _default_subcommands and parser_spec.consolidate_subcommand_args:
+        print(f"Subparser defaults before (potential) filter: {_default_subcommands}")
+        print(f"args are: {args}")
+
+        # NB: It seems that the subcommands need to passed in order :(
+        # This list should be in the correct order since python dicts are ordered
+        # TODO: Check again if the visit order is pre-order dfs or BFS
+        _default_list = list(_default_subcommands.keys())
+
+        if len(args) > 0:
+            # Check that we can add the _default_subcommands to args Go through user
+            # speecified args and if the user made a choice eliminate the default.
+            dsu = _parsers.DSU()
+
+            # Use this for replacement
+            _item_to_pos = {item: idx for idx, item in enumerate(_default_list)}
+
+            # TODO(Mircea): Maybe do a check to ensure that user didn't specify multiple
+            # choices for the same union?  Does tyro do this already?
+            first_non_choice = 0
+            for index, arg_item in enumerate(args):
+                if not dsu.is_node(arg_item):
+                    # NB: This assumes tyro.conf.ConsolidateSubcommandArgs!
+                    # From this index forward there should not be subcommand choices
+                    first_non_choice = index
+                    break
+
+                # Otherwise, replace the default!
+                for default_choice in _default_subcommands:
+                    if dsu.connected(default_choice, arg_item):
+                        _default_list[_item_to_pos[default_choice]] = arg_item
+                        break
+
+            args = _default_list + args[first_non_choice:]
+
+        print(f"Subparser defaults after filter from args: {_default_list}:")
+        print(f"final args are: {args}")
+
     # Generate parser!
     formatter_class = functools.partial(
         _argparse_formatter.TyroArgparseHelpFormatter, min_column_height_ratio=0.4
