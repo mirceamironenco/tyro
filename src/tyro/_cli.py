@@ -395,22 +395,22 @@ def _cli_impl(
         print(f"Subparser defaults before (potential) filter: {_default_subcommands}")
         print(f"args are: {args}")
 
-        # NB: It seems that the subcommands need to passed in order :(
+        # NB: The subcommands need to passed in order.
         # This list should be in the correct order since python dicts are ordered
-        # TODO: Check again if the visit order is pre-order dfs or BFS
+        # TODO(Mircea): Check again if the visit order is pre-order dfs (it should be).
         _default_list = list(_default_subcommands.keys())
 
         print(f"Ordered defaults list: {_default_list}")
 
         if not args:
-            # The use passed no arguments, juse use the defaults.
+            # The user passed no arguments, just use the defaults.
             # TODO(Mircea): Is this necessary after https://github.com/brentyi/tyro/pull/224 ?
             args = _default_list
         else:
             # Go through user args and if the user made a subcom choice replace the default.
             dsu = _parsers.DSU()
 
-            # Use this for replacement
+            # Use this for replacement.
             _item_to_pos = {item: idx for idx, item in enumerate(_default_list)}
 
             # This checks if the user specified multiple choices for the same union
