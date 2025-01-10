@@ -395,8 +395,8 @@ def _cli_impl(
         print(f"Subparser defaults before (potential) filter: {_default_subcommands}")
         print(f"args are: {args}")
 
-        # NB: The subcommands need to passed in order.
-        # This list should be in the correct order since python dicts are ordered
+        # NB: The subcommands need to be passed in order.
+        # This list should be in the correct order.
         # TODO(Mircea): Check again if the visit order is pre-order dfs (it should be).
         _default_list = list(_default_subcommands.keys())
 
@@ -433,7 +433,7 @@ def _cli_impl(
                 # Otherwise, replace the default!
                 # TODO: This doesn't check for order consistency, since
                 # _default_list is in the correct order, meaning the user can specify
-                # the choices in the wrong order, and this take care of it. Change?
+                # the choices in the wrong order, and this takes care of it. Change?
                 for default_choice in _default_subcommands:
                     if dsu.connected(default_choice, arg_item):
                         _default_list[_item_to_pos[default_choice]] = arg_item
