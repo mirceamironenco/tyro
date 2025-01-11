@@ -991,8 +991,6 @@ class TyroArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
             dummy_console = Console(
                 width=self.formatter._width, theme=THEME.as_rich_theme()
             )
-            min_column_width = self.formatter._min_column_width
-            height_breakpoint = self.formatter._height_breakpoint
             with dummy_console.capture() as capture:
                 # Get rich renderables from items.
                 top_parts = []
@@ -1021,6 +1019,8 @@ class TyroArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
                         )
 
                 # Split into columns.
+                min_column_width = self.formatter._min_column_width
+                height_breakpoint = self.formatter._height_breakpoint
                 column_count = max(
                     1,
                     min(
@@ -1029,43 +1029,62 @@ class TyroArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
                         len(column_parts),
                     ),
                 )
-                done = False
-                column_parts_grouped = None
-                column_width = None
-                while not done:
-                    if column_count > 1:  # pragma: no cover
-                        column_width = self.formatter._width // column_count - 1
-                        # Correct the line count for each panel using the known column
-                        # width. This will account for word wrap.
-                        column_parts_lines = [
-                            str_from_rich(p, width=column_width).strip().count("\n") + 1
-                            for p in column_parts
-                        ]
-                    else:
-                        column_width = None
+                if column_count > 1:  # pragma: no cover
+                    column_width = self.formatter._width // column_count - 1
+                    # Correct the line count for each panel using the known column
+                    # width. This will account for word wrap.
+                    column_parts_lines = map(
+                        lambda p: str_from_rich(p, width=column_width)
+                        .strip()
+                        .count("\n")
+                        + 1,
+                        column_parts,
+                    )
+                else:
+                    column_width = None
+                column_lines = [0 for i in range(column_count)]
+                column_parts_grouped = [[] for i in range(column_count)]
+                for p, l in zip(column_parts, column_parts_lines):
+                    chosen_column = column_lines.index(min(column_lines))
+                    column_parts_grouped[chosen_column].append(p)
+                    column_lines[chosen_column] += l
+                # done = False
+                # column_parts_grouped = None
+                # column_width = None
+                # while not done:
+                #     if column_count > 1:  # pragma: no cover
+                #         column_width = self.formatter._width // column_count - 1
+                #         # Correct the line count for each panel using the known column
+                #         # width. This will account for word wrap.
+                #         column_parts_lines = [
+                #             str_from_rich(p, width=column_width).strip().count("\n") + 1
+                #             for p in column_parts
+                #         ]
+                #     else:
+                #         column_width = None
 
-                    column_lines = [0 for i in range(column_count)]
-                    column_parts_grouped = [[] for i in range(column_count)]
-                    for p, l in zip(column_parts, column_parts_lines):
-                        chosen_column = column_lines.index(min(column_lines))
-                        column_parts_grouped[chosen_column].append(p)
-                        column_lines[chosen_column] += l
+                #     column_lines = [0 for i in range(column_count)]
+                #     column_parts_grouped = [[] for i in range(column_count)]
+                #     for p, l in zip(column_parts, column_parts_lines):
+                #         chosen_column = column_lines.index(min(column_lines))
+                #         column_parts_grouped[chosen_column].append(p)
+                #         column_lines[chosen_column] += l
 
-                    column_lines_max = max(*column_lines, 1)  # Prevent divide-by-zero.
-                    column_lines_ratio = [l / column_lines_max for l in column_lines]
+                #     column_lines_max = max(*column_lines, 1)  # Prevent divide-by-zero.
+                #     column_lines_ratio = [l / column_lines_max for l in column_lines]
 
-                    # Done if we're down to one column or all columns are
-                    # within 60% of the maximum height.
-                    #
-                    # We use these ratios to prevent large hanging columns: https://github.com/brentyi/tyro/issues/222
-                    if column_count == 1 or all(
-                        [
-                            ratio > self.formatter._min_column_height_ratio
-                            for ratio in column_lines_ratio
-                        ]
-                    ):
-                        break
-                    column_count -= 1  # pragma: no cover
+                #     # Done if we're down to one column or all columns are
+                #     # within 60% of the maximum height.
+                #     #
+                #     # We use these ratios to prevent large hanging columns: https://github.com/brentyi/tyro/issues/222
+                #     if column_count == 1 or all(
+                #         [
+                #             ratio > self.formatter._min_column_height_ratio
+                #             for ratio in column_lines_ratio
+                #         ]
+                #     ):
+                #         break
+                #     column_count -= 1  # pragma: no cover
 
                 assert column_parts_grouped is not None
                 columns = Columns(
