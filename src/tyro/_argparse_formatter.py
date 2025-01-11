@@ -991,6 +991,8 @@ class TyroArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
             dummy_console = Console(
                 width=self.formatter._width, theme=THEME.as_rich_theme()
             )
+            min_column_width = self.formatter._min_column_width
+            height_breakpoint = self.formatter._height_breakpoint
             with dummy_console.capture() as capture:
                 # Get rich renderables from items.
                 top_parts = []
@@ -1013,14 +1015,16 @@ class TyroArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
                         column_parts.append(item_content)
                         # Estimate line count. This won't correctly account for
                         # wrapping, as we don't know the column layout yet.
+                        # TODO(Mircea): replaced width=65 with min_column_width
+                        # check again that this is valid?
                         column_parts_lines.append(
-                            str_from_rich(item_content, width=65).strip().count("\n")
+                            str_from_rich(item_content, width=min_column_width)
+                            .strip()
+                            .count("\n")
                             + 1
                         )
 
                 # Split into columns.
-                min_column_width = self.formatter._min_column_width
-                height_breakpoint = self.formatter._height_breakpoint
                 column_count = max(
                     1,
                     min(

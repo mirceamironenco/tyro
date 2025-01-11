@@ -48,6 +48,7 @@ def cli(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: None | Sequence[conf._markers.Marker] = None,
+    instantiate_subcomm_defaults: bool = False,
 ) -> OutT: ...
 
 
@@ -63,6 +64,7 @@ def cli(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: None | Sequence[conf._markers.Marker] = None,
+    instantiate_subcomm_defaults: bool = False,
 ) -> tuple[OutT, list[str]]: ...
 
 
@@ -81,6 +83,7 @@ def cli(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: None | Sequence[conf._markers.Marker] = None,
+    instantiate_subcomm_defaults: bool = False,
 ) -> OutT: ...
 
 
@@ -99,6 +102,7 @@ def cli(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: None | Sequence[conf._markers.Marker] = None,
+    instantiate_subcomm_defaults: bool = False,
 ) -> tuple[OutT, list[str]]: ...
 
 
@@ -113,6 +117,7 @@ def cli(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: None | Sequence[conf._markers.Marker] = None,
+    instantiate_subcomm_defaults: bool = False,
     **deprecated_kwargs,
 ) -> OutT | tuple[OutT, list[str]]:
     """Instantiate or call ``f``, with inputs populated from an automatically
@@ -175,6 +180,7 @@ def cli(
             use_underscores=use_underscores,
             console_outputs=console_outputs,
             config=config,
+            instantiate_subcomm_defaults=instantiate_subcomm_defaults,
             **deprecated_kwargs,
         )
 
@@ -200,6 +206,7 @@ def get_parser(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: None | Sequence[conf._markers.Marker] = None,
+    instantiate_subcomm_defaults: bool = False,
 ) -> argparse.ArgumentParser: ...
 
 
@@ -213,6 +220,7 @@ def get_parser(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: None | Sequence[conf._markers.Marker] = None,
+    instantiate_subcomm_defaults: bool = False,
 ) -> argparse.ArgumentParser: ...
 
 
@@ -227,6 +235,7 @@ def get_parser(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: None | Sequence[conf._markers.Marker] = None,
+    instantiate_subcomm_defaults: bool = False,
 ) -> argparse.ArgumentParser:
     """Get the ``argparse.ArgumentParser`` object generated under-the-hood by
     :func:`tyro.cli()`. Useful for tools like ``sphinx-argparse``, ``argcomplete``, etc.
@@ -247,6 +256,7 @@ def get_parser(
                 use_underscores=use_underscores,
                 console_outputs=console_outputs,
                 config=config,
+                instantiate_subcomm_defaults=instantiate_subcomm_defaults,
             ),
         )
 
@@ -262,6 +272,7 @@ def _cli_impl(
     return_unknown_args: bool,
     console_outputs: bool,
     config: None | Sequence[conf._markers.Marker],
+    instantiate_subcomm_defaults: bool = False,
     **deprecated_kwargs,
 ) -> (
     OutT
@@ -390,13 +401,22 @@ def _cli_impl(
 
     # from prettyformatter import pformat
     # from rich import print as rich_print
-
     # rich_print(pformat(parser_spec, json=True))
 
-    # TODO: Maybe make a copy here?
-    _default_subcommands = parser_spec.subparsers_default_subcommand_names
+    consolidate_subcomm = parser_spec.consolidate_subcommand_args
 
-    if _default_subcommands and parser_spec.consolidate_subcommand_args:
+    if instantiate_subcomm_defaults and not consolidate_subcomm:
+        raise ValueError(
+            "Defaults instantiation enabled only for tyro.conf.ConsolidateSubcommandArgs"
+        )
+
+    if consolidate_subcomm and instantiate_subcomm_defaults:
+        _default_subcommands = parser_spec.subparsers_default_subcommand_names
+
+        if not _default_subcommands:
+            raise ValueError(
+                "instantiate_defaults was set to True, but not subcommands have defaults."
+            )
         # NB: The subcommands need to be passed in order.
         # This list should be in the correct order.
         # TODO(Mircea): Check again if the visit order is pre-order dfs (it should be).
@@ -438,8 +458,7 @@ def _cli_impl(
                     if dsu.connected(default_choice, arg_item):
                         _default_list[_item_to_pos[default_choice]] = arg_item
 
-                        # TODO: Replace the ParserSpecitication to add group subtitle
-                        # maybe dataclass.replace?
+                        # TODO(Mircea): Replace the ParserSpecitication to add group subtitle.
                         break
 
             if first_non_choice is not None:

@@ -194,15 +194,10 @@ class ParserSpecification:
                 [intern_prefix, field.intern_name]
             )
 
-            # print(f"{field.helptext=}")
             if field.helptext is not None:
                 helptext_from_intern_prefixed_field_name[class_field_name] = (
                     field.helptext
                 )
-            # print(f"{class_field_name=}")
-            # print(f"{field.helptext=}")
-            # print(f"{field_out.description=}")
-            # print("----")
 
             if isinstance(field_out, SubparsersSpecification):
                 # Handle subparsers.
@@ -234,11 +229,10 @@ class ParserSpecification:
                     # Note: we are propagating up all subcommand default names
                     # from all levels, to the root node. Because only the root
                     # node is accessible in _cli.py
+                    # The DSU is a singleton so we don't need to merge it.
                     subcommand_default_names |= (
                         field_out.default_parser.subparsers_default_subcommand_names
                     )
-
-                    # The DSU is a singleton so we don't need to merge it.
 
             elif isinstance(field_out, ParserSpecification):
                 # Handle nested parsers.
