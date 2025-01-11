@@ -20,7 +20,7 @@ def subcommand_cli_from_dict(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: Optional[Sequence[Marker]] = None,
-    instantiate_subcomm_defaults: bool = False,
+    apply_subcomm_defaults: bool = False,
 ) -> T: ...
 
 
@@ -36,7 +36,7 @@ def subcommand_cli_from_dict(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: Optional[Sequence[Marker]] = None,
-    instantiate_subcomm_defaults: bool = False,
+    apply_subcomm_defaults: bool = False,
 ) -> Any: ...
 
 
@@ -49,7 +49,7 @@ def subcommand_cli_from_dict(
     use_underscores: bool = False,
     console_outputs: bool = True,
     config: Optional[Sequence[Marker]] = None,
-    instantiate_subcomm_defaults: bool = False,
+    apply_subcomm_defaults: bool = False,
 ) -> Any:
     """Generate a subcommand CLI from a dictionary of functions.
 
@@ -126,5 +126,5 @@ def subcommand_cli_from_dict(
         use_underscores=use_underscores,
         console_outputs=console_outputs,
         config=config,
-        instantiate_subcomm_defaults=instantiate_subcomm_defaults,
+        apply_subcomm_defaults=apply_subcomm_defaults,
     )
