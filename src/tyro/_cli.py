@@ -388,19 +388,19 @@ def _cli_impl(
         extern_prefix="",  # Used for recursive calls.
     )
 
+    # from prettyformatter import pformat
+    # from rich import print as rich_print
+
+    # rich_print(pformat(parser_spec, json=True))
+
     # TODO: Maybe make a copy here?
     _default_subcommands = parser_spec.subparsers_default_subcommand_names
 
     if _default_subcommands and parser_spec.consolidate_subcommand_args:
-        print(f"Subparser defaults before (potential) filter: {_default_subcommands}")
-        print(f"args are: {args}")
-
         # NB: The subcommands need to be passed in order.
         # This list should be in the correct order.
         # TODO(Mircea): Check again if the visit order is pre-order dfs (it should be).
         _default_list = list(_default_subcommands.keys())
-
-        print(f"Ordered defaults list: {_default_list}")
 
         if not args:
             # The user passed no arguments, just use the defaults.
@@ -437,6 +437,9 @@ def _cli_impl(
                 for default_choice in _default_subcommands:
                     if dsu.connected(default_choice, arg_item):
                         _default_list[_item_to_pos[default_choice]] = arg_item
+
+                        # TODO: Replace the ParserSpecitication to add group subtitle
+                        # maybe dataclass.replace?
                         break
 
             if first_non_choice is not None:
@@ -445,9 +448,6 @@ def _cli_impl(
             else:
                 # We have only subcommand choices.
                 args = _default_list
-
-        print(f"Subparser defaults after filter from args: {_default_list}:")
-        print(f"final args are: {args}")
 
     # Generate parser!
     formatter_class = functools.partial(
@@ -463,7 +463,7 @@ def _cli_impl(
         parser._parsing_known_args = return_unknown_args
         parser._console_outputs = console_outputs
         parser._args = args
-        parser_spec.apply(parser, force_required_subparsers=False)
+        parser_spec.apply(parser, force_required_subparsers=False, parent=None)
 
         # Print help message when no arguments are passed in. (but arguments are
         # expected)

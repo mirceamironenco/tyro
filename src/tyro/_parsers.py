@@ -119,7 +119,7 @@ class ParserSpecification:
     subcommand_dsu: DSU
 
     # Use a dict to preserve insertion order.
-    subparsers_default_subcommand_names: dict[str, Any]
+    subparsers_default_subcommand_names: dict[str, SubparsersSpecification]
 
     @staticmethod
     def from_callable_or_type(
@@ -188,10 +188,28 @@ class ParserSpecification:
                 args.append(field_out)
                 if field_out.lowered.required:
                     has_required_args = True
-            elif isinstance(field_out, SubparsersSpecification):
+                continue
+
+            class_field_name = _strings.make_field_name(
+                [intern_prefix, field.intern_name]
+            )
+
+            # print(f"{field.helptext=}")
+            if field.helptext is not None:
+                helptext_from_intern_prefixed_field_name[class_field_name] = (
+                    field.helptext
+                )
+            # print(f"{class_field_name=}")
+            # print(f"{field.helptext=}")
+            # print(f"{field_out.description=}")
+            # print("----")
+
+            if isinstance(field_out, SubparsersSpecification):
                 # Handle subparsers.
                 subparsers_from_prefix[field_out.intern_prefix] = field_out
                 subparsers = add_subparsers_to_leaves(subparsers, field_out)
+
+                # TODO(Mircea): Should check for field_out.default_instance?
 
                 if field_out.default_name is not None:
                     assert field_out.default_name in field_out.parser_from_name
@@ -200,9 +218,14 @@ class ParserSpecification:
 
                     if field_out.default_name not in subcommand_default_names:
                         # The value here isn't really relevant.
-                        subcommand_default_names[field_out.default_name] = (
-                            subcommand_dsu.find(field_out.default_name)
-                        )
+                        # TODO(Mircea): For the value, try setting a reference to
+                        # the field_out object itself. The nin _cli.py, when the
+                        # default is applied, modify the field helptext so the choice
+                        # shows in in group subtitle?
+                        # subcommand_default_names[field_out.default_name] = (
+                        #     subcommand_dsu.find(field_out.default_name)
+                        # )
+                        subcommand_default_names[field_out.default_name] = field_out
 
                     for choice in field_out.parser_from_name.keys():
                         subcommand_dsu.union(field_out.default_name, choice)
@@ -222,6 +245,12 @@ class ParserSpecification:
                 nested_parser = field_out
                 child_from_prefix[field_out.intern_prefix] = nested_parser
 
+                # If there's no helptext from the field, we can grab it from
+                # the callable (docstring) itself.
+                if field.helptext is None:
+                    helptext_from_intern_prefixed_field_name[class_field_name] = (
+                        _docstrings.get_callable_description(nested_parser.f)
+                    )
                 if nested_parser.has_required_args:
                     has_required_args = True
 
@@ -262,6 +291,11 @@ class ParserSpecification:
                         + str(field.default)
                     )
 
+                if field_out.subparsers_default_subcommand_names:
+                    subcommand_default_names |= (
+                        field_out.subparsers_default_subcommand_names
+                    )
+
         return ParserSpecification(
             f=f,
             description=_strings.remove_single_line_breaks(
@@ -284,7 +318,10 @@ class ParserSpecification:
         )
 
     def apply(
-        self, parser: argparse.ArgumentParser, force_required_subparsers: bool
+        self,
+        parser: argparse.ArgumentParser,
+        force_required_subparsers: bool,
+        parent: ParserSpecification | None,
     ) -> Tuple[argparse.ArgumentParser, ...]:
         """Create defined arguments and subparsers."""
 
@@ -301,7 +338,7 @@ class ParserSpecification:
         # Create subparser tree.
         subparser_group = None
         if self.subparsers is not None:
-            leaves = self.subparsers.apply(parser, force_required_subparsers)
+            leaves = self.subparsers.apply(parser, self, force_required_subparsers)
             subparser_group = parser._action_groups.pop()
         else:
             leaves = (parser,)
@@ -310,9 +347,9 @@ class ParserSpecification:
         # apply arguments to the intermediate parser or only on the leaves.
         if self.consolidate_subcommand_args:
             for leaf in leaves:
-                self.apply_args(leaf)
+                self.apply_args(leaf, parent=parent)
         else:
-            self.apply_args(parser)
+            self.apply_args(parser, parent=parent)
 
         if subparser_group is not None:
             parser._action_groups.append(subparser_group)
@@ -331,7 +368,7 @@ class ParserSpecification:
     def apply_args(
         self,
         parser: argparse.ArgumentParser,
-        parent: ParserSpecification | None = None,
+        parent: ParserSpecification | None,
     ) -> None:
         """Create defined arguments and subparsers."""
 
@@ -723,6 +760,7 @@ class SubparsersSpecification:
     def apply(
         self,
         parent_parser: argparse.ArgumentParser,
+        parent: ParserSpecification | None,
         force_required_subparsers: bool,
     ) -> Tuple[argparse.ArgumentParser, ...]:
         title = "subcommands"
@@ -784,7 +822,7 @@ class SubparsersSpecification:
             subparser._args = parent_parser._args
 
             subparser_tree_leaves.extend(
-                subparser_def.apply(subparser, force_required_subparsers)
+                subparser_def.apply(subparser, force_required_subparsers, parent=parent)
             )
 
         return tuple(subparser_tree_leaves)
