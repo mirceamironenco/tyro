@@ -204,7 +204,28 @@ class ParserSpecification:
                 subparsers_from_prefix[field_out.intern_prefix] = field_out
                 subparsers = add_subparsers_to_leaves(subparsers, field_out)
 
-                # TODO(Mircea): Should check for field_out.default_instance?
+                # TODO(Mircea): This is something to test out optional subcommands
+                # which don't have = None default. If the = None default exists,
+                # then the current code will already add 'command:None' to defaults.
+                if field_out.default_name is None:
+                    assert field_out.default_parser is None
+
+                    # TODO: Unify this and below into a single function call!
+                    # TODO: Propose field_out_hooks?
+                    none_default = None
+                    for _pname, _parser in field_out.parser_from_name.items():
+                        if _parser.f is none_proxy:
+                            subcommand_dsu.make(_pname)
+                            if _pname not in subcommand_default_names:
+                                subcommand_default_names[_pname] = field_out
+                                none_default = _pname
+                                break
+
+                    if none_default is not None:
+                        for choice in field_out.parser_from_name.keys():
+                            subcommand_dsu.union(none_default, choice)
+
+                    continue
 
                 if field_out.default_name is not None:
                     assert field_out.default_name in field_out.parser_from_name
@@ -212,14 +233,10 @@ class ParserSpecification:
                     subcommand_dsu.make(field_out.default_name)
 
                     if field_out.default_name not in subcommand_default_names:
-                        # The value here isn't really relevant.
                         # TODO(Mircea): For the value, try setting a reference to
-                        # the field_out object itself. The nin _cli.py, when the
+                        # the field_out object itself. Then in _cli.py, when the
                         # default is applied, modify the field helptext so the choice
                         # shows in in group subtitle?
-                        # subcommand_default_names[field_out.default_name] = (
-                        #     subcommand_dsu.find(field_out.default_name)
-                        # )
                         subcommand_default_names[field_out.default_name] = field_out
 
                     for choice in field_out.parser_from_name.keys():
