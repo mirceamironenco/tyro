@@ -1015,12 +1015,8 @@ class TyroArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
                         column_parts.append(item_content)
                         # Estimate line count. This won't correctly account for
                         # wrapping, as we don't know the column layout yet.
-                        # TODO(Mircea): replaced width=65 with min_column_width
-                        # check again that this is valid?
                         column_parts_lines.append(
-                            str_from_rich(item_content, width=min_column_width)
-                            .strip()
-                            .count("\n")
+                            str_from_rich(item_content, width=65).strip().count("\n")
                             + 1
                         )
 

@@ -315,7 +315,6 @@ class ParserSpecification:
         self,
         parser: argparse.ArgumentParser,
         force_required_subparsers: bool,
-        parent: ParserSpecification | None,
     ) -> Tuple[argparse.ArgumentParser, ...]:
         """Create defined arguments and subparsers."""
 
@@ -332,7 +331,7 @@ class ParserSpecification:
         # Create subparser tree.
         subparser_group = None
         if self.subparsers is not None:
-            leaves = self.subparsers.apply(parser, self, force_required_subparsers)
+            leaves = self.subparsers.apply(parser, force_required_subparsers)
             subparser_group = parser._action_groups.pop()
         else:
             leaves = (parser,)
@@ -341,9 +340,9 @@ class ParserSpecification:
         # apply arguments to the intermediate parser or only on the leaves.
         if self.consolidate_subcommand_args:
             for leaf in leaves:
-                self.apply_args(leaf, parent=parent)
+                self.apply_args(leaf)
         else:
-            self.apply_args(parser, parent=parent)
+            self.apply_args(parser)
 
         if subparser_group is not None:
             parser._action_groups.append(subparser_group)
@@ -362,7 +361,7 @@ class ParserSpecification:
     def apply_args(
         self,
         parser: argparse.ArgumentParser,
-        parent: ParserSpecification | None,
+        parent: ParserSpecification | None = None,
     ) -> None:
         """Create defined arguments and subparsers."""
 
@@ -754,7 +753,6 @@ class SubparsersSpecification:
     def apply(
         self,
         parent_parser: argparse.ArgumentParser,
-        parent: ParserSpecification | None,
         force_required_subparsers: bool,
     ) -> Tuple[argparse.ArgumentParser, ...]:
         title = "subcommands"
@@ -816,7 +814,7 @@ class SubparsersSpecification:
             subparser._args = parent_parser._args
 
             subparser_tree_leaves.extend(
-                subparser_def.apply(subparser, force_required_subparsers, parent=parent)
+                subparser_def.apply(subparser, force_required_subparsers)
             )
 
         return tuple(subparser_tree_leaves)

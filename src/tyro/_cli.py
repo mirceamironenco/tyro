@@ -470,7 +470,7 @@ def _cli_impl(
 
     # Generate parser!
     formatter_class = functools.partial(
-        _argparse_formatter.TyroArgparseHelpFormatter, min_column_height_ratio=0.4
+        _argparse_formatter.TyroArgparseHelpFormatter, min_column_height_ratio=0.0001
     )
     with _argparse_formatter.ansi_context():
         parser = _argparse_formatter.TyroArgumentParser(
@@ -482,7 +482,7 @@ def _cli_impl(
         parser._parsing_known_args = return_unknown_args
         parser._console_outputs = console_outputs
         parser._args = args
-        parser_spec.apply(parser, force_required_subparsers=False, parent=None)
+        parser_spec.apply(parser, force_required_subparsers=False)
 
         # Print help message when no arguments are passed in. (but arguments are
         # expected)
