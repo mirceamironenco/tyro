@@ -256,12 +256,6 @@ class ParserSpecification:
                 nested_parser = field_out
                 child_from_prefix[field_out.intern_prefix] = nested_parser
 
-                # If there's no helptext from the field, we can grab it from
-                # the callable (docstring) itself.
-                if field.helptext is None:
-                    helptext_from_intern_prefixed_field_name[class_field_name] = (
-                        _docstrings.get_callable_description(nested_parser.f)
-                    )
                 if nested_parser.has_required_args:
                     has_required_args = True
 
