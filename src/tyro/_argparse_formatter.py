@@ -1251,6 +1251,10 @@ class TyroArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
             elif len(self.formatter._tyro_rule._text[0]) < max_width:
                 self.formatter._tyro_rule._text = ["─" * max_width]
 
+            # TODO(Mircea): This is where group subtitle is added.
+            # if description_part is None:
+            #     description_part = "Hello"
+
             # Add description text if needed.
             if description_part is not None:
                 item_parts = [
