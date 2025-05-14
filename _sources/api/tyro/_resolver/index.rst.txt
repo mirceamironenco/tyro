@@ -14,6 +14,10 @@
 Module Contents
 ---------------
 
+.. py:data:: TypeAliasTypeAlternate
+
+   
+
 .. py:data:: UnionType
 
    Same as types.UnionType, but points to typing.Union for older versions of
@@ -57,12 +61,6 @@ Module Contents
 .. py:function:: is_namedtuple(cls: tyro._typing.TypeForm) -> bool
 
 
-.. py:function:: type_from_typevar_constraints(typ: TypeOrCallable) -> TypeOrCallable
-
-   Try to concretize a type from a TypeVar's bounds or constraints. Identity if
-   unsuccessful.
-
-
 .. py:data:: TypeOrCallableOrNone
 
    
@@ -102,7 +100,7 @@ Module Contents
    
 
 .. py:function:: unwrap_annotated(typ: TypeOrCallable, search_type: tyro._typing.TypeForm[MetadataType]) -> Tuple[TypeOrCallable, Tuple[MetadataType, Ellipsis]]
-                 unwrap_annotated(typ: TypeOrCallable, search_type: typing_extensions.Literal[all]) -> Tuple[TypeOrCallable, Tuple[Any, Ellipsis]]
+                 unwrap_annotated(typ: TypeOrCallable, search_type: Literal[all]) -> Tuple[TypeOrCallable, Tuple[Any, Ellipsis]]
                  unwrap_annotated(typ: TypeOrCallable, search_type: None = None) -> TypeOrCallable
 
    Helper for parsing typing.Annotated types.
@@ -156,7 +154,7 @@ Module Contents
    union. Loosely motivated by: https://github.com/brentyi/tyro/issues/20
 
 
-.. py:function:: isinstance_with_fuzzy_numeric_tower(obj: Any, classinfo: Type) -> Union[bool, typing_extensions.Literal[~]]
+.. py:function:: isinstance_with_fuzzy_numeric_tower(obj: Any, classinfo: Type) -> Union[bool, Literal[~]]
 
    Enhanced version of isinstance() that returns:
    - True: if object is exactly of the specified type

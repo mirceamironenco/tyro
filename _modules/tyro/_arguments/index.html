@@ -218,7 +218,7 @@
   <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation/">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../your_first_cli/">Your first CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../your_first_cli/">Your First CLI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../whats_supported/">What’s supported</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
@@ -285,11 +285,12 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">collections.abc</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Callable</span><span class="p">,</span>
     <span class="n">Iterable</span><span class="p">,</span>
@@ -313,17 +314,6 @@
     <span class="n">PrimitiveTypeInfo</span><span class="p">,</span>
     <span class="n">UnsupportedTypeAnnotationError</span><span class="p">,</span>
 <span class="p">)</span>
-
-<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="n">cached_property</span> <span class="o">=</span> <span class="nb">property</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="c1"># Python &gt;=3.8.</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
-    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="c1"># Python 3.7.</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">backports.cached_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>  <span class="c1"># type: ignore</span>
-
 
 <span class="n">_T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_T&quot;</span><span class="p">)</span>
 
@@ -436,7 +426,7 @@
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Aliases were specified, but </span><span class="si">{</span><span class="n">name_or_flags</span><span class="si">}</span><span class="s2"> is positional. Aliases will be ignored.&quot;</span>
             <span class="p">)</span>
-            <span class="n">name_or_flags</span> <span class="o">=</span> <span class="n">name_or_flags</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">name_or_flags</span> <span class="o">=</span> <span class="n">name_or_flags</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
 
         <span class="c1"># We&#39;re actually going to skip the default field: if an argument is unset, the</span>
         <span class="c1"># MISSING value will be detected in _calling.py and the field default will</span>
@@ -445,7 +435,7 @@
         <span class="n">action</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;action&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;append&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">}:</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_singleton</span><span class="o">.</span><span class="n">MISSING_NONPROP</span>
-        <span class="k">elif</span> <span class="n">action</span> <span class="ow">in</span> <span class="p">{</span><span class="n">BooleanOptionalAction</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">}:</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="ow">in</span> <span class="p">{</span><span class="n">BooleanOptionalAction</span><span class="p">,</span> <span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="s2">&quot;store_false&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">}:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -562,19 +552,18 @@
     <span class="p">):</span>
         <span class="c1"># Treat bools as a normal parameter.</span>
         <span class="k">return</span>
-    <span class="k">elif</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">default</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="c1"># Default `False` =&gt; --flag passed in flips to `True`.</span>
-        <span class="n">lowered</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">BooleanOptionalAction</span>
-        <span class="n">lowered</span><span class="o">.</span><span class="n">instance_from_str</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
-        <span class="p">)</span>  <span class="c1"># argparse will directly give us a bool!</span>
-        <span class="n">lowered</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">default</span>
-        <span class="k">return</span>
 
-    <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;Expected a boolean as a default for </span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">intern_name</span><span class="si">}</span><span class="s2">, but got&quot;</span>
-        <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">default</span><span class="si">}</span><span class="s2">.&quot;</span>
-    <span class="p">)</span>
+    <span class="c1"># Default `False` =&gt; --flag passed in flips to `True`.</span>
+    <span class="k">if</span> <span class="n">_markers</span><span class="o">.</span><span class="n">FlagCreatePairsOff</span> <span class="ow">in</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">markers</span><span class="p">:</span>
+        <span class="c1"># If default is True, --flag will flip to `False`.</span>
+        <span class="c1"># If default is False, --no-flag will flip to `True`.</span>
+        <span class="n">lowered</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="s2">&quot;store_false&quot;</span> <span class="k">if</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;store_true&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Create both --flag and --no-flag.</span>
+        <span class="n">lowered</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">BooleanOptionalAction</span>
+    <span class="n">lowered</span><span class="o">.</span><span class="n">instance_from_str</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>  <span class="c1"># argparse will directly give us a bool!</span>
+    <span class="n">lowered</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">default</span>
+    <span class="k">return</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_rule_apply_primitive_specs</span><span class="p">(</span>
@@ -681,7 +670,7 @@
                     <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
 
             <span class="c1"># Return output with correct type.</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">container_type</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Sequence</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">out</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">container_type</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
@@ -794,7 +783,7 @@
         <span class="k">elif</span> <span class="n">lowered</span><span class="o">.</span><span class="n">instance_from_str</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Intentionally not quoted via shlex, since this can&#39;t actually be passed</span>
             <span class="c1"># in via the commandline.</span>
-            <span class="n">behavior_hint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(fixed to: </span><span class="si">{</span><span class="n">default_label</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="n">behavior_hint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(fixed to: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">default</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
         <span class="k">elif</span> <span class="n">lowered</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span>
             <span class="c1"># Repeatable argument.</span>
             <span class="n">behavior_hint</span> <span class="o">=</span> <span class="s2">&quot;(repeatable)&quot;</span>
@@ -840,20 +829,18 @@
     <span class="n">arg</span><span class="p">:</span> <span class="n">ArgumentDefinition</span><span class="p">,</span>
     <span class="n">lowered</span><span class="p">:</span> <span class="n">LoweredArgumentDefinition</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">lowered</span><span class="o">.</span><span class="n">help</span> <span class="ow">is</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">:</span>
-        <span class="c1"># Use standard name for suppressed arguments.</span>
-        <span class="c1"># Relevant: https://github.com/brentyi/tyro/issues/170</span>
-        <span class="n">name_or_flag</span> <span class="o">=</span> <span class="n">_strings</span><span class="o">.</span><span class="n">make_field_name</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">extern_prefix</span><span class="p">,</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">extern_name</span><span class="p">]</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="p">(</span>
+    <span class="n">extern_name</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">extern_name</span>
+    <span class="k">if</span> <span class="n">lowered</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;store_false&quot;</span><span class="p">:</span>
+        <span class="n">extern_name</span> <span class="o">=</span> <span class="s2">&quot;no_&quot;</span> <span class="o">+</span> <span class="n">extern_name</span>
+
+    <span class="k">if</span> <span class="p">(</span>
         <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">argconf</span><span class="o">.</span><span class="n">prefix_name</span> <span class="ow">is</span> <span class="kc">False</span>
         <span class="ow">or</span> <span class="n">_markers</span><span class="o">.</span><span class="n">OmitArgPrefixes</span> <span class="ow">in</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">markers</span>
     <span class="p">):</span>
         <span class="c1"># Strip prefixes when the argument is suppressed.</span>
         <span class="c1"># Still need to call make_field_name() because it converts underscores</span>
         <span class="c1"># to hyphens, etc.</span>
-        <span class="n">name_or_flag</span> <span class="o">=</span> <span class="n">_strings</span><span class="o">.</span><span class="n">make_field_name</span><span class="p">([</span><span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">extern_name</span><span class="p">])</span>
+        <span class="n">name_or_flag</span> <span class="o">=</span> <span class="n">_strings</span><span class="o">.</span><span class="n">make_field_name</span><span class="p">([</span><span class="n">extern_name</span><span class="p">])</span>
     <span class="k">elif</span> <span class="p">(</span>
         <span class="n">_markers</span><span class="o">.</span><span class="n">OmitSubcommandPrefixes</span> <span class="ow">in</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">markers</span>
         <span class="ow">and</span> <span class="n">arg</span><span class="o">.</span><span class="n">subcommand_prefix</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
@@ -862,17 +849,13 @@
         <span class="c1"># prefixes.`extern_prefix` can start with the prefix corresponding to</span>
         <span class="c1"># the parent subcommand, but end with other prefixes correspondeding to</span>
         <span class="c1"># nested structures within the subcommand.</span>
-        <span class="n">name_or_flag</span> <span class="o">=</span> <span class="n">_strings</span><span class="o">.</span><span class="n">make_field_name</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">extern_prefix</span><span class="p">,</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">extern_name</span><span class="p">]</span>
-        <span class="p">)</span>
+        <span class="n">name_or_flag</span> <span class="o">=</span> <span class="n">_strings</span><span class="o">.</span><span class="n">make_field_name</span><span class="p">([</span><span class="n">arg</span><span class="o">.</span><span class="n">extern_prefix</span><span class="p">,</span> <span class="n">extern_name</span><span class="p">])</span>
         <span class="n">strip_prefix</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">subcommand_prefix</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
         <span class="k">assert</span> <span class="n">name_or_flag</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">strip_prefix</span><span class="p">),</span> <span class="n">name_or_flag</span>
         <span class="n">name_or_flag</span> <span class="o">=</span> <span class="n">name_or_flag</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">strip_prefix</span><span class="p">)</span> <span class="p">:]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Standard prefixed name.</span>
-        <span class="n">name_or_flag</span> <span class="o">=</span> <span class="n">_strings</span><span class="o">.</span><span class="n">make_field_name</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">extern_prefix</span><span class="p">,</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">extern_name</span><span class="p">]</span>
-        <span class="p">)</span>
+        <span class="n">name_or_flag</span> <span class="o">=</span> <span class="n">_strings</span><span class="o">.</span><span class="n">make_field_name</span><span class="p">([</span><span class="n">arg</span><span class="o">.</span><span class="n">extern_prefix</span><span class="p">,</span> <span class="n">extern_name</span><span class="p">])</span>
 
     <span class="c1"># Prefix keyword arguments with --.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">is_positional</span><span class="p">():</span>
@@ -920,7 +903,7 @@
     <span class="k">if</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">argconf</span><span class="o">.</span><span class="n">metavar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">lowered</span><span class="o">.</span><span class="n">metavar</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">argconf</span><span class="o">.</span><span class="n">metavar</span>
     <span class="k">if</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">argconf</span><span class="o">.</span><span class="n">aliases</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">lowered</span><span class="o">.</span><span class="n">name_or_flags</span> <span class="o">=</span> <span class="n">lowered</span><span class="o">.</span><span class="n">name_or_flags</span> <span class="o">+</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">argconf</span><span class="o">.</span><span class="n">aliases</span>
+        <span class="n">lowered</span><span class="o">.</span><span class="n">name_or_flags</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">argconf</span><span class="o">.</span><span class="n">aliases</span> <span class="o">+</span> <span class="n">lowered</span><span class="o">.</span><span class="n">name_or_flags</span>
 </pre></div>
         </article>
       </div>

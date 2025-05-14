@@ -218,7 +218,7 @@
   <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation/">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../your_first_cli/">Your first CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../your_first_cli/">Your First CLI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../whats_supported/">What’s supported</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
@@ -365,8 +365,16 @@
 
         <span class="c1"># Cycle detection.</span>
         <span class="c1">#</span>
-        <span class="c1"># &#39;parent&#39; here refers to in the nesting hierarchy, not the superclass.</span>
-        <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">parent_classes</span> <span class="ow">and</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># - &#39;parent&#39; here refers to in the nesting hierarchy, not the superclass.</span>
+        <span class="c1"># - We threshold by `max_nesting_depth` to suppress false positives,</span>
+        <span class="c1">#  for example from custom constructors that behave differently</span>
+        <span class="c1">#  depending the default value. (example: ml_collections.ConfigDict)</span>
+        <span class="n">max_nesting_depth</span> <span class="o">=</span> <span class="mi">128</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">f</span> <span class="ow">in</span> <span class="n">parent_classes</span>
+            <span class="ow">and</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">dict</span>
+            <span class="ow">and</span> <span class="n">intern_prefix</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_nesting_depth</span>
+        <span class="p">):</span>
             <span class="k">raise</span> <span class="n">UnsupportedTypeAnnotationError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Found a cyclic dependency with type </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
@@ -539,16 +547,6 @@
         <span class="k">def</span><span class="w"> </span><span class="nf">format_group_name</span><span class="p">(</span><span class="n">group_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">group_name</span> <span class="o">+</span> <span class="s2">&quot; options&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="nf">group_name_from_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">_arguments</span><span class="o">.</span><span class="n">ArgumentDefinition</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-            <span class="n">prefix</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">lowered</span><span class="o">.</span><span class="n">name_or_flags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">prefix</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;--&quot;</span><span class="p">):</span>
-                <span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
-            <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">prefix</span><span class="p">:</span>
-                <span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-            <span class="k">return</span> <span class="n">prefix</span>
-
         <span class="n">group_from_group_name</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">argparse</span><span class="o">.</span><span class="n">_ArgumentGroup</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">_action_groups</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
             <span class="o">**</span><span class="p">{</span>
@@ -566,7 +564,19 @@
             <span class="k">if</span> <span class="n">arg</span><span class="o">.</span><span class="n">is_suppressed</span><span class="p">():</span>
                 <span class="k">continue</span>
 
-            <span class="n">group_name</span> <span class="o">=</span> <span class="n">group_name_from_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+            <span class="n">group_name</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">arg</span><span class="o">.</span><span class="n">extern_prefix</span>
+                <span class="k">if</span> <span class="n">arg</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">argconf</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
+                <span class="c1"># If the field name is &quot;erased&quot;, we&#39;ll place the argument in</span>
+                <span class="c1"># the parent&#39;s group.</span>
+                <span class="c1">#</span>
+                <span class="c1"># This is to avoid &quot;issue 1&quot; in:</span>
+                <span class="c1"># https://github.com/brentyi/tyro/issues/183</span>
+                <span class="c1">#</span>
+                <span class="c1"># Setting `tyro.conf.arg(name=&quot;&quot;)` should generally be</span>
+                <span class="c1"># discouraged, so this will rarely matter.</span>
+                <span class="k">else</span> <span class="n">arg</span><span class="o">.</span><span class="n">extern_prefix</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
             <span class="k">if</span> <span class="n">group_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">group_from_group_name</span><span class="p">:</span>
                 <span class="n">description</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">parent</span><span class="o">.</span><span class="n">helptext_from_intern_prefixed_field_name</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -666,15 +676,7 @@
                     <span class="k">return</span> <span class="n">subparsers_attempt</span>
 
         <span class="c1"># (2) Handle nested callables.</span>
-        <span class="k">if</span> <span class="n">force_primitive</span> <span class="o">==</span> <span class="s2">&quot;struct&quot;</span> <span class="ow">or</span> <span class="n">_fields</span><span class="o">.</span><span class="n">is_struct_type</span><span class="p">(</span>
-            <span class="n">field</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">default</span>
-        <span class="p">):</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">with_new_type_stripped</span><span class="p">(</span>
-                <span class="n">_resolver</span><span class="o">.</span><span class="n">narrow_subtypes</span><span class="p">(</span>
-                    <span class="n">field</span><span class="o">.</span><span class="n">type_stripped</span><span class="p">,</span>
-                    <span class="n">field</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
-                <span class="p">),</span>
-            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">_fields</span><span class="o">.</span><span class="n">is_struct_type</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">default</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">ParserSpecification</span><span class="o">.</span><span class="n">from_callable_or_type</span><span class="p">(</span>
                 <span class="n">field</span><span class="o">.</span><span class="n">type_stripped</span><span class="p">,</span>
                 <span class="n">markers</span><span class="o">=</span><span class="n">field</span><span class="o">.</span><span class="n">markers</span><span class="p">,</span>
@@ -785,6 +787,28 @@
                 <span class="p">),</span>
                 <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">option_unwrapped</span> <span class="ow">is</span> <span class="n">none_proxy</span> <span class="k">else</span> <span class="n">cast</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">option</span><span class="p">),</span>
             <span class="p">)</span>
+            <span class="k">if</span> <span class="n">subcommand_name</span> <span class="ow">in</span> <span class="n">subcommand_type_from_name</span><span class="p">:</span>
+                <span class="c1"># Raise a warning that the subcommand already exists</span>
+                <span class="n">original_type</span> <span class="o">=</span> <span class="n">subcommand_type_from_name</span><span class="p">[</span><span class="n">subcommand_name</span><span class="p">]</span>
+                <span class="n">new_type</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">option_unwrapped</span> <span class="ow">is</span> <span class="n">none_proxy</span> <span class="k">else</span> <span class="n">option_unwrapped</span>
+                <span class="p">)</span>
+                <span class="n">original_type_full_name</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">original_type</span><span class="o">.</span><span class="vm">__module__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">original_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="n">new_type_full_name</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">new_type</span><span class="o">.</span><span class="vm">__module__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">new_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">if</span> <span class="n">new_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="k">else</span> <span class="s2">&quot;None&quot;</span>
+                <span class="p">)</span>
+
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Duplicate subcommand name detected: &#39;</span><span class="si">{</span><span class="n">subcommand_name</span><span class="si">}</span><span class="s2">&#39; is already used for &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">original_type_full_name</span><span class="si">}</span><span class="s2"> but will be overwritten by </span><span class="si">{</span><span class="n">new_type_full_name</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Only the last type (</span><span class="si">{</span><span class="n">new_type_full_name</span><span class="si">}</span><span class="s2">) will be accessible via this subcommand. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Consider using distinct class names or use tyro.conf.subcommand() to specify &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;explicit subcommand names.&quot;</span>
+                <span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found_subcommand_configs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># Explicitly annotated default.</span>
                 <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">found_subcommand_configs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span>

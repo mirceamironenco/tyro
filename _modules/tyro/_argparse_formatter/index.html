@@ -218,7 +218,7 @@
   <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation/">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../your_first_cli/">Your first CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../your_first_cli/">Your First CLI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../whats_supported/">What’s supported</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
@@ -303,7 +303,17 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gettext</span><span class="w"> </span><span class="kn">import</span> <span class="n">gettext</span> <span class="k">as</span> <span class="n">_</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">NoReturn</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Generator</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">NoReturn</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Set</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">rich.columns</span><span class="w"> </span><span class="kn">import</span> <span class="n">Columns</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">Group</span><span class="p">,</span> <span class="n">RenderableType</span>
@@ -607,8 +617,10 @@
             <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
                 <span class="k">pass</span>
 
-    <span class="nd">@override</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_known_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg_strings</span><span class="p">,</span> <span class="n">namespace</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+    <span class="c1"># @override</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_known_args</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">arg_strings</span><span class="p">,</span> <span class="n">namespace</span>
+    <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;We override _parse_known_args() to improve error messages in the presence of</span>
 <span class="sd">        subcommands. Difference is marked with &lt;new&gt;...&lt;/new&gt; below.&quot;&quot;&quot;</span>
 
@@ -974,8 +986,9 @@
                             <span class="c1"># Prefer arguments available in the currently specified</span>
                             <span class="c1"># subcommands.</span>
                             <span class="o">-</span><span class="n">arg_score</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">subcommand_match_score</span><span class="p">,</span>
-                            <span class="c1"># Cluster by flag name, usage hint, help message.</span>
+                            <span class="c1"># Cluster by flag name, metavar, usage hint, help message.</span>
                             <span class="n">arg_score</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">option_strings</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">arg_score</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">metavar</span><span class="p">,</span>
                             <span class="n">arg_score</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">usage_hint</span><span class="p">,</span>
                             <span class="n">arg_score</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">help</span><span class="p">,</span>
                         <span class="p">),</span>
@@ -994,8 +1007,7 @@
                     <span class="n">show_arguments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg_info</span><span class="p">)</span>
                     <span class="n">prev_arg_option_strings</span> <span class="o">=</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">option_strings</span>
 
-                <span class="n">prev_arg_option_strings</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="n">prev_argument_help</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">prev_arg_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_ArgumentInfo</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">same_counter</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="n">dots_printed</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">show_arguments</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1010,7 +1022,10 @@
                 <span class="n">unique_counter</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="k">for</span> <span class="n">arg_info</span> <span class="ow">in</span> <span class="n">show_arguments</span><span class="p">:</span>
                     <span class="n">same_counter</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="k">if</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">option_strings</span> <span class="o">!=</span> <span class="n">prev_arg_option_strings</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">prev_arg_info</span> <span class="ow">is</span> <span class="kc">None</span>
+                        <span class="ow">or</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">option_strings</span> <span class="o">!=</span> <span class="n">prev_arg_info</span><span class="o">.</span><span class="n">option_strings</span>
+                    <span class="p">):</span>
                         <span class="n">same_counter</span> <span class="o">=</span> <span class="mi">0</span>
                         <span class="k">if</span> <span class="n">unique_counter</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>
                             <span class="k">break</span>
@@ -1021,7 +1036,8 @@
                     <span class="k">if</span> <span class="p">(</span>
                         <span class="nb">len</span><span class="p">(</span><span class="n">show_arguments</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">8</span>
                         <span class="ow">and</span> <span class="n">same_counter</span> <span class="o">&gt;=</span> <span class="mi">4</span>
-                        <span class="ow">and</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">option_strings</span> <span class="o">==</span> <span class="n">prev_arg_option_strings</span>
+                        <span class="ow">and</span> <span class="n">prev_arg_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="ow">and</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">option_strings</span> <span class="o">==</span> <span class="n">prev_arg_info</span><span class="o">.</span><span class="n">option_strings</span>
                     <span class="p">):</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">dots_printed</span><span class="p">:</span>
                             <span class="n">extra_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -1035,7 +1051,9 @@
 
                     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
                         <span class="n">has_subcommands</span>
-                        <span class="ow">and</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">option_strings</span> <span class="o">==</span> <span class="n">prev_arg_option_strings</span>
+                        <span class="ow">and</span> <span class="n">prev_arg_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="ow">and</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">option_strings</span> <span class="o">==</span> <span class="n">prev_arg_info</span><span class="o">.</span><span class="n">option_strings</span>
+                        <span class="ow">and</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">metavar</span> <span class="o">==</span> <span class="n">prev_arg_info</span><span class="o">.</span><span class="n">metavar</span>
                     <span class="p">):</span>
                         <span class="n">extra_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                             <span class="n">Padding</span><span class="p">(</span>
@@ -1062,8 +1080,10 @@
                     <span class="k">if</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">help</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span>
                         <span class="c1"># Only print help messages if it&#39;s not the same as the previous</span>
                         <span class="c1"># one.</span>
-                        <span class="n">arg_info</span><span class="o">.</span><span class="n">help</span> <span class="o">!=</span> <span class="n">prev_argument_help</span>
-                        <span class="ow">or</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">option_strings</span> <span class="o">!=</span> <span class="n">prev_arg_option_strings</span>
+                        <span class="n">prev_arg_info</span> <span class="ow">is</span> <span class="kc">None</span>
+                        <span class="ow">or</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">help</span> <span class="o">!=</span> <span class="n">prev_arg_info</span><span class="o">.</span><span class="n">help</span>
+                        <span class="ow">or</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">option_strings</span> <span class="o">!=</span> <span class="n">prev_arg_info</span><span class="o">.</span><span class="n">option_strings</span>
+                        <span class="ow">or</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">metavar</span> <span class="o">!=</span> <span class="n">prev_arg_info</span><span class="o">.</span><span class="n">metavar</span>
                     <span class="p">):</span>
                         <span class="n">extra_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Padding</span><span class="p">(</span><span class="n">arg_info</span><span class="o">.</span><span class="n">help</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">)))</span>
 
@@ -1076,8 +1096,7 @@
                             <span class="p">)</span>
                         <span class="p">)</span>
 
-                    <span class="n">prev_arg_option_strings</span> <span class="o">=</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">option_strings</span>
-                    <span class="n">prev_argument_help</span> <span class="o">=</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">help</span>
+                    <span class="n">prev_arg_info</span> <span class="o">=</span> <span class="n">arg_info</span>
 
         <span class="k">elif</span> <span class="n">message</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;the following arguments are required:&quot;</span><span class="p">):</span>
             <span class="n">message_title</span> <span class="o">=</span> <span class="s2">&quot;Required options&quot;</span>
@@ -1215,6 +1234,7 @@
                         <span class="n">style</span><span class="o">=</span><span class="p">(</span>
                             <span class="n">THEME</span><span class="o">.</span><span class="n">metavar_fixed</span> <span class="k">if</span> <span class="n">out</span> <span class="o">==</span> <span class="s2">&quot;</span><span class="si">{fixed}</span><span class="s2">&quot;</span> <span class="k">else</span> <span class="n">THEME</span><span class="o">.</span><span class="n">metavar</span>
                         <span class="p">),</span>
+                        <span class="n">overflow</span><span class="o">=</span><span class="s2">&quot;fold&quot;</span><span class="p">,</span>
                     <span class="p">),</span>
                     <span class="n">soft_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -1307,7 +1327,7 @@
                     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item_content</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                         <span class="k">if</span> <span class="n">item_content</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
                             <span class="k">continue</span>
-                        <span class="n">top_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="o">.</span><span class="n">from_ansi</span><span class="p">(</span><span class="n">item_content</span><span class="p">))</span>
+                        <span class="n">top_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="o">.</span><span class="n">from_ansi</span><span class="p">(</span><span class="n">item_content</span><span class="p">,</span> <span class="n">overflow</span><span class="o">=</span><span class="s2">&quot;fold&quot;</span><span class="p">))</span>
 
                     <span class="c1"># Add panels. (argument groups, subcommands, etc)</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -1403,9 +1423,11 @@
             <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">help</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">help</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
                 <span class="n">helptext</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">Text</span><span class="o">.</span><span class="n">from_ansi</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">help</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%%</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;%&quot;</span><span class="p">))</span>
+                    <span class="n">Text</span><span class="o">.</span><span class="n">from_ansi</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">help</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%%</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;%&quot;</span><span class="p">),</span> <span class="n">overflow</span><span class="o">=</span><span class="s2">&quot;fold&quot;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">_strings</span><span class="o">.</span><span class="n">strip_ansi_sequences</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">help</span><span class="p">)</span> <span class="o">!=</span> <span class="n">action</span><span class="o">.</span><span class="n">help</span>
-                    <span class="k">else</span> <span class="n">Text</span><span class="o">.</span><span class="n">from_markup</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">help</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%%</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;%&quot;</span><span class="p">))</span>
+                    <span class="k">else</span> <span class="n">Text</span><span class="o">.</span><span class="n">from_markup</span><span class="p">(</span>
+                        <span class="n">action</span><span class="o">.</span><span class="n">help</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%%</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;%&quot;</span><span class="p">),</span> <span class="n">overflow</span><span class="o">=</span><span class="s2">&quot;fold&quot;</span>
+                    <span class="p">)</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">helptext</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1423,6 +1445,7 @@
                     <span class="n">Text</span><span class="o">.</span><span class="n">from_ansi</span><span class="p">(</span>
                         <span class="n">invocation</span><span class="p">,</span>
                         <span class="n">style</span><span class="o">=</span><span class="n">THEME</span><span class="o">.</span><span class="n">invocation</span><span class="p">,</span>
+                        <span class="n">overflow</span><span class="o">=</span><span class="s2">&quot;fold&quot;</span><span class="p">,</span>
                     <span class="p">),</span>
                     <span class="n">helptext</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -1434,6 +1457,7 @@
                     <span class="n">Text</span><span class="o">.</span><span class="n">from_ansi</span><span class="p">(</span>
                         <span class="n">invocation</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
                         <span class="n">style</span><span class="o">=</span><span class="n">THEME</span><span class="o">.</span><span class="n">invocation</span><span class="p">,</span>
+                        <span class="n">overflow</span><span class="o">=</span><span class="s2">&quot;fold&quot;</span><span class="p">,</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
                 <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">help</span><span class="p">:</span>
@@ -1485,6 +1509,7 @@
                         <span class="n">description_part</span> <span class="o">=</span> <span class="n">Text</span><span class="o">.</span><span class="n">from_ansi</span><span class="p">(</span>
                             <span class="n">item_content</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
                             <span class="n">style</span><span class="o">=</span><span class="n">THEME</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                            <span class="n">overflow</span><span class="o">=</span><span class="s2">&quot;fold&quot;</span><span class="p">,</span>
                         <span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">item_parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
